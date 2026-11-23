@@ -1,0 +1,45 @@
+ARG VERSION=dev
+
+FROM --platform=$BUILDPLATFORM golang:1.27 AS build
+
+ENV CGO_ENABLED=0
+
+WORKDIR /go/src/app
+
+COPY go.mod go.sum ./
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
+COPY . .
+
+ARG VERSION
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    set -eu; \
+    export GOOS="${TARGETOS}" GOARCH="${TARGETARCH}"; \
+    go vet -v ./...; \
+    go build -ldflags="-w -s -X crusoe-registry-token-issuer/internal.Version=${VERSION}" \
+        -trimpath \
+        -o /go/bin/crusoe-registry-token-issuer;
+
+FROM gcr.io/distroless/static-debian13@sha256:aafe993665bf6200db38a02c11a9351e782a84b6a45e7f33b6695638c88e3931
+
+ARG VERSION
+
+LABEL \
+    org.opencontainers.image.title="crusoe-registry-token-issuer" \
+    org.opencontainers.image.description="Crusoe Container Registry (CCR) token broker for secret managers" \
+    org.opencontainers.image.source="https://github.com/JetBrains-Research/crusoe-registry-token-issuer" \
+    org.opencontainers.image.authors="ozren.dabic@jetbrains.com" \
+    org.opencontainers.image.licenses="MIT" \
+    org.opencontainers.image.version=$VERSION
+
+USER 65532:65532
+
+COPY --from=build --chmod=755 /go/bin/crusoe-registry-token-issuer /usr/local/bin/
+
+CMD ["crusoe-registry-token-issuer"]

@@ -1,0 +1,19 @@
+{{- if .Values.podDisruptionBudget.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "crusoe-registry-token-issuer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "crusoe-registry-token-issuer.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- end }}
+  {{- with .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "crusoe-registry-token-issuer.selectorLabels" . | nindent 6 }}
+{{- end }}

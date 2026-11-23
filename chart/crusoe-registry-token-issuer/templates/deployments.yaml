@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "crusoe-registry-token-issuer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.deployment.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "crusoe-registry-token-issuer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  revisionHistoryLimit: {{ .Values.deployment.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "crusoe-registry-token-issuer.selectorLabels" . | nindent 6 }}
+  {{- with .Values.deployment.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        {{- with .Values.deployment.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "crusoe-registry-token-issuer.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.deployment.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: token-issuer
+          image: {{ include "crusoe-registry-token-issuer.image" . }}
+          imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.deployment.secretName }}
+            - configMapRef:
+                name: {{ include "crusoe-registry-token-issuer.fullname" . }}
+              prefix: "CRUSOE_ISSUER_"
+          {{- with .Values.deployment.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.config.server.port | default 5001 }}
+              protocol: TCP
+          {{- with .Values.deployment.probes.liveness }}
+          {{- if .enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ include "crusoe-registry-token-issuer.basePath" $ }}/healthz
+              port: http
+            initialDelaySeconds: {{ .initialDelay }}
+            periodSeconds: {{ .period }}
+            timeoutSeconds: {{ .timeout }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.deployment.probes.readiness }}
+          {{- if .enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ include "crusoe-registry-token-issuer.basePath" $ }}/readyz
+              port: http
+            initialDelaySeconds: {{ .initialDelay }}
+            periodSeconds: {{ .period }}
+            timeoutSeconds: {{ .timeout }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.deployment.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.deployment.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.deployment.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployment.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      serviceAccountName: {{ include "crusoe-registry-token-issuer.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.deployment.terminationGracePeriodSeconds }}
+      {{- with .Values.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployment.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

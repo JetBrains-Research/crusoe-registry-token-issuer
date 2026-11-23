@@ -1,0 +1,22 @@
+{{- if .Values.service.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "crusoe-registry-token-issuer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "crusoe-registry-token-issuer.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "crusoe-registry-token-issuer.selectorLabels" . | nindent 4 }}
+  type: {{ .Values.service.type }}
+{{- end }}

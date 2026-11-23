@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "crusoe-registry-token-issuer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "crusoe-registry-token-issuer.labels" . | nindent 4 }}
+data:
+  {{- with .Values.config }}
+  REGISTRY: {{ required "config.registry is required" .registry | quote }}
+  {{- with .server }}
+  {{- if .debug }}
+  SERVER_DEBUG: {{ .debug | quote }}
+  {{- end }}
+  {{- if .host }}
+  SERVER_HOST: {{ .host | quote }}
+  {{- end }}
+  {{- if .port }}
+  SERVER_PORT: {{ .port | quote }}
+  {{- end }}
+  {{- if .basePath }}
+  SERVER_BASE_PATH: {{ .basePath | quote }}
+  {{- end }}
+  {{- with .timeout }}
+  {{- if .request }}
+  SERVER_TIMEOUT_REQUEST: {{ .request | quote }}
+  {{- end }}
+  {{- if .shutdown }}
+  SERVER_TIMEOUT_SHUTDOWN: {{ .shutdown | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- with .token }}
+  {{- if .ttl }}
+  TOKEN_TTL: {{ .ttl | quote }}
+  {{- end }}
+  {{- if .prefix }}
+  TOKEN_PREFIX: {{ .prefix | quote }}
+  {{- end }}
+  {{- end }}
+  {{- with .log }}
+  {{- if .format }}
+  LOG_FORMAT: {{ .format | quote }}
+  {{- end }}
+  {{- if .level }}
+  LOG_LEVEL: {{ .level | quote }}
+  {{- end }}
+  {{- if .source }}
+  LOG_SOURCE: {{ .source | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end }}

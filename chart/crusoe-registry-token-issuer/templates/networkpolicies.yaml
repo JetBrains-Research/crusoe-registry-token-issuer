@@ -1,0 +1,28 @@
+{{- if .Values.networkPolicy.create }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "crusoe-registry-token-issuer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "crusoe-registry-token-issuer.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.networkPolicy.egress }}
+  egress:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.networkPolicy.ingress }}
+  ingress:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  podSelector:
+    matchLabels:
+      {{- include "crusoe-registry-token-issuer.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    {{- if .Values.networkPolicy.egress }}
+    - Egress
+    {{- end }}
+    {{- if .Values.networkPolicy.ingress }}
+    - Ingress
+    {{- end }}
+{{- end }}

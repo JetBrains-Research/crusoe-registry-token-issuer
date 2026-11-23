@@ -1,0 +1,85 @@
+config:
+  registry: "registry.*.ccr.crusoecloudcompute.com"
+  server:
+    debug: false
+    host: ""
+    port:
+    basePath: ""
+    timeout:
+      request:
+      shutdown:
+  token:
+    ttl: ""
+    prefix: ""
+  log:
+    format: ""
+    level: ""
+    source: false
+
+deployment:
+  affinity: {}
+  annotations: {}
+  env: []
+  imagePullSecrets: []
+  image:
+    pullPolicy: "IfNotPresent"
+    repository: "ghcr.io/jetbrains-research/crusoe-registry-token-issuer"
+    tag: ""
+  nodeSelector: {}
+  podAnnotations: {}
+  priorityClassName: ""
+  probes:
+    liveness:
+      enabled: true
+      initialDelay: 5
+      period: 15
+      timeout: 1
+    readiness:
+      enabled: true
+      initialDelay: 10
+      period: 30
+      timeout: 1
+  replicas: 1
+  revisionHistoryLimit: 10
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "32Mi"
+    limits:
+      memory: "64Mi"
+  secretName: "crusoe-secrets"
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  strategy: {}
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+
+networkPolicy:
+  create: false
+  egress: []
+  ingress: []
+
+podDisruptionBudget:
+  create: false
+  maxUnavailable: ~
+  minAvailable: 1
+
+serviceAccount:
+  annotations: {}
+  automountToken: false
+  create: false
+  name: ""
+
+service:
+  annotations: {}
+  create: false
+  type: ClusterIP
+  port: 5001

@@ -1,0 +1,11 @@
+### Health Check
+GET {{ base }}/healthz
+Accept: application/json
+
+### Readyness Check
+GET {{ base }}/readyz
+Accept: application/json
+
+### Request Token
+POST {{ base }}/token
+Accept: application/json
