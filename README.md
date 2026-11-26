@@ -1,5 +1,7 @@
 # Crusoe Registry Token Issuer
 
+[![JetBrains Research](https://jb.gg/badges/research.svg)](https://github.com/JetBrains#jetbrains-on-github)
+
 Simple Go HTTP service that mints short-lived [Crusoe Container Registry][ccr] (CCR) tokens on request.
 It is meant to sit behind an [External Secrets Operator][eso] (ESO) webhook generator,
 which turns each token into a `kubernetes.io/dockerconfigjson` secret.
@@ -371,6 +373,10 @@ for example `http://crusoe-registry-token-issuer.crusoe-system.svc:5001/api/v1/t
 | `serviceAccount.*`                         |                                                                 | Used to create and configure a dedicated `ServiceAccount` that issuer will run as.                |
 | `networkPolicy.*`                          |                                                                 | Used to create and configure a dedicated `NetworkPolicy` for limiting traffic from/to the issuer. |
 | `podDisruptionBudget.*`                    |                                                                 | Used to create and configure a dedicated `PodDisruptionBudget` for high availability.             |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
